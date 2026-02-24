@@ -4,13 +4,6 @@ trading opportunity based on the strategy is present.
 """
 import copy
 import math
-import logger as log
-from tws_connection import ib, build_connection
-
-# Check if a connection exists already
-if not ib.isConnected():
-    build_connection()
-
 
 def generate_signals(pairs, threshold):
     """

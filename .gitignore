@@ -6,3 +6,4 @@ dbs/
 personal_constants.py
 __pycache__/
 alpha_model.py
+*todo.txt

@@ -10,12 +10,16 @@ CURRENCY = "USD"
 # The value of the whole portfolio
 BUDGET = 500_000.00
 
-# Amount of thed slots which is essentiall the divisor of budget to determine the capital allocated to a trade.
+# Amount of thed slots which is essentially the divisor of budget to determine the capital allocated to a trade.
 PAIRS_TRADED = 10
 
 PATH = "./pairs-trading/dbs/"
 
 DATABASE_NAME = "trading_log.db"
+
+DB_SETUP_TIMEOUT = 5
+
+GENERIC_TIMEOUT = 3
 
 THRESHOLD = 0
 
@@ -56,3 +60,13 @@ FINRA_TRADING_ACTIVITY_FEE = 0.000166
 # FINRA Consolidated Audit Trail Fees: USD 0.000048 * Quantity to 0.0000729 * Quantity
 FINRA_AUDIT_FEES = 0.0000729
 
+# Clearing Fees
+# -------------
+NSCC_DTC_FEES = 0.00020
+
+# Pass through Fees
+# -----------------
+# NYSE Pass Through Fees: Commissions * 0.000175
+NYSE_PASS_THROUGH = 0.000175
+# FINRA Pass Through Fees: Commissions * 0.000565
+FINRA_PASS_THROUGH = 0.000565

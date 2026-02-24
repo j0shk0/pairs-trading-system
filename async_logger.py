@@ -15,9 +15,12 @@ async def initialize_logger():
             try:
                 create_table1 = f"""CREATE TABLE Signals(Time SmallDateTime, Deviation double, Sign int, Ticker_a char(15), 
                                     Ticker_b Char(15), Const double, Slope double, Threshold double);"""
-                await log.execute(create_table1)
                 create_table2 = f"CREATE TABLE Trades(Time SmallDateTime, Type char(15), Action char(5), Quantity int, Stock char(15), Price double);"
-                await log.execute(create_table2)
+                tasks = [
+                    aio.create_task(log.execute(create_table1)),
+                    aio.create_task(log.execute(create_table2)),
+                ]
+                await aio.gather(*tasks)
                 await log.commit()
                 print("\033[32mLOGGER\033[0m: Database was created with tables 'Trades' and 'Signals'")
             except aiosqlite.OperationalError as e:

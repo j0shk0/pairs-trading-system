@@ -2,8 +2,8 @@
 This module contains the Pairs class to effectively access the data 
 and related operations of each Pair that is traded.
 """
-import ib_insync
 import asyncio as aio
+import ib_insync
 from async_tws_connection import ib, build_connection
 from constants import MARKET_DATA_TYPE, CURRENCY
 
@@ -20,7 +20,7 @@ class Pair:
 
     ticker_a = const + slope * ticker_b
 
-    We can correctly determine under- or overvalutation, independend of the mapping
+    We can correctly determine under- or overvaluation, independent of the mapping
     as long as the equation is set up correctly.
     """
 
@@ -65,35 +65,7 @@ class Pair:
         self.quotes_b = data_b
         self.contract_a = contract_a
         self.contract_b = contract_b
-        print("Connected")
+        print(f"\033[32mDATA CONNECTOR\033[0m: Pair {self.ticker_a} and {self.ticker_b} connected.")
 
     def export_essentials(self):
         return self.tickers, self.currency
-
-
-"""
-I aim to do a full refacotring of the architecture implementing async where possible (and sensible).
-As a result of that I need to rewrite each Module by its own and thereby test it in isolation.
-"""
-async def test_main():
-    test_pairs = [Pair(("AAPL", "MSFT"), CURRENCY, (1,1)),
-                  Pair(("GM", "TSLA"), CURRENCY, (1,1)),
-                  Pair(("NVDA", "AMD"), CURRENCY, (1,1)),
-                  Pair(("GOOG", "META"), CURRENCY, (1,1)),
-                  Pair(("AMZN", "NFLX"), CURRENCY, (1,1)),
-                  Pair(("INTC", "QCOM"), CURRENCY, (1,1)),
-                  Pair(("ADBE", "CRM"), CURRENCY, (1,1)),
-                  Pair(("TSLA", "F"), CURRENCY, (1,1)),
-                  Pair(("CSCO", "ORCL"), CURRENCY, (1,1)),
-                  Pair(("PEP", "KO"), CURRENCY, (1,1)),
-                  Pair(("AMZN", "CPNG"), CURRENCY, (1,1))]
-
-    if not ib.isConnected():
-        await build_connection()
-
-    await aio.gather(*[pair.connect_data() for pair in test_pairs])
-    ib.disconnect()
-
-
-if __name__ == "__main__":
-    aio.run(test_main())   
