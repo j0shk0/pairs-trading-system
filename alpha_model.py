@@ -26,14 +26,14 @@ def generate_signals(pairs, threshold):
             deviation = abs(delta)
             print(f"\033[32mALPHA MODEL\033[0m : Deviation = {deviation}; Stock_a = {pair.quotes_a}; Stock_b = {pair.quotes_b};")
 
-            # We safe the sign to find the correct trade diraction later.
+            # We save the sign to find the correct trade direction later.
             sign = math.copysign(1, delta)
             ticker_a, ticker_b = pair.tickers
 
             pairs_traded[ticker_a] = pair
             pairs_traded[ticker_b] = pair
 
-            # new_signals will contain all the information for future evalutation of the Signal.
+            # new_signals will contain all the information for future evaluation of the Signal.
             new_signals[pair.tickers] = (deviation,
                                          sign,
                                          pair,

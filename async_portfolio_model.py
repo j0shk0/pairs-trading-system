@@ -9,6 +9,7 @@ from async_tws_connection import ib, build_connection
 import async_logger as logger
 from constants import PATH, DATABASE_NAME, MINIMUM_TRADE_COST, COST_PER_SHARE, CURRENCY
 
+
 class Portfolio:
     """
     This class is used for the Portfolio management of the different Pair-Trades.
@@ -28,9 +29,12 @@ class Portfolio:
 
     def __init__(self, account_number,
                  slots,
-                 budget):
+                 budget,
+                 is_test=False
+                 ):
 
-        self.profile = account_number
+        self.empty_slots = None
+        self.account_number = account_number
         self.ignored_signals = {}
         self.budget = budget
         self.tws_positions = []
@@ -38,9 +42,6 @@ class Portfolio:
         self.portfolio = {}
         self.followed_signals = {}
         self.all_slots = slots
-        initial_slot_value = self.all_slots - (len(self.portfolio.keys()) / 2)
-        print(f"\033[32mPORTFOLIO MODEL\033[0m : Slot value detected with {initial_slot_value};")
-        self.empty_slots = copy.copy(initial_slot_value)  # Each signal involves two stocks.
 
     async def initialize(self):
         if ib.portfolio():
@@ -64,7 +65,7 @@ class Portfolio:
                             print(f"\033[32mPORTFOLIO MODEL\033[0m : No Signal to retrieve for {ticker};")
                             self.followed_signals[ticker] = tuple()
                         else:
-                            current_time, deviation, sign, ticker_a, ticker_b, const, slope, threshold = data
+                            timestamp, deviation, sign, ticker_a, ticker_b, const, slope, threshold = data
                             pair = Pair((ticker_a, ticker_b), CURRENCY, (slope, const))
                             await pair.connect_data()
                             self.followed_signals[ticker] = (deviation, sign, pair, {ticker_a: copy.copy(pair.quotes_a),
@@ -72,7 +73,7 @@ class Portfolio:
                                                                                          pair.quotes_b)},
                                                              const, slope, threshold)
                             print(
-                                f"\033[32mPORTFOLIO MODEL\033[0m : Signal retrieval for {ticker} from {current_time} successful;")
+                                f"\033[32mPORTFOLIO MODEL\033[0m : Signal retrieval for {ticker} from {timestamp} successful;")
                 except sqlite3.OperationalError as e:
                     print("\033[32mPORTFOLIO MODEL\033[0m : Signal retrieval failed due to database error;")
                     print(e)
@@ -80,7 +81,9 @@ class Portfolio:
             self.followed_signals = {}
             print(
                 "\033[32mPORTFOLIO MODEL\033[0m : No positions in tws detected - No followed signals should be loaded;")
-
+        initial_slot_value = self.all_slots - (len(self.portfolio.keys()) / 2)
+        print(f"\033[32mPORTFOLIO MODEL\033[0m : Slot value detected with {initial_slot_value};")
+        self.empty_slots = copy.copy(initial_slot_value)  # Each signal involves two stocks.
 
     def analyze_signals(self, alpha_model_output):
         """
@@ -150,26 +153,26 @@ class Portfolio:
                     f"ticker_b = {ticker_b}, with {int(shares_b)} shares;")
         return portfolio_adjustment
 
-
     def optimize(self):
-        portfolio_adjustment = {}
-
         # First we gather the current positions directly from TWS if any exist.
-        if ib.portfolio() == []:
+        if not ib.portfolio():
             print("\033[32mPORTFOLIO MODEL\033[0m : No Portfolio detected;")
-            return {}  # This is crucial because the execution_model requires a dict as input and the output of this method is supposed to flow into it.
+            return {}  # This is crucial because the execution_model requires a dict as input.
         else:
             self.tws_positions = ib.portfolio()
 
         symbols = [pos.contract.symbol for pos in self.tws_positions]
 
         current_ignored_signals = list(copy.copy(list(self.ignored_signals.values())))
-        # We sort the ignored_signals in descending order (biggest element first) after their "deviation" parameter, the expected return.
-        current_ignored_signals.sort(key=lambda a: a[0], reverse=True)
 
-        if current_ignored_signals == []:
+        if not current_ignored_signals:
             return {}
 
+        # We sort the ignored_signals in descending order (biggest element first) after their "deviation" parameter, the expected return.
+        # The reason is of course prioritization.
+        current_ignored_signals.sort(key=lambda a: a[0], reverse=True)
+
+        portfolio_adjustment = {}
         signals_to_follow = []
 
         # We create a set to skip symbols from the symbols list we already looked at.
@@ -179,9 +182,9 @@ class Portfolio:
             if symbol in visited_symbols:
                 continue
 
-            signal_for_symbol = self.followed_signals[symbol]
+            last_signal = self.followed_signals[symbol]
 
-            deviation, sign, pair, quotes, const, slope, threshold = signal_for_symbol
+            deviation, sign, pair, quotes, const, slope, threshold = last_signal
             tickers = tuple(quotes.keys())
 
             absolute_earnings = 0.00
@@ -212,7 +215,7 @@ class Portfolio:
                 index = symbols.index(ticker)
 
                 cost_to_trade = MINIMUM_TRADE_COST if MINIMUM_TRADE_COST >= (
-                            COST_PER_SHARE * self.tws_positions[index].position) \
+                        COST_PER_SHARE * self.tws_positions[index].position) \
                     else (COST_PER_SHARE * self.tws_positions[index].position)
 
                 pnl_of_trade = self.tws_positions[index].unrealizedPNL
