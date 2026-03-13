@@ -1,8 +1,12 @@
 """
 This file contains all constants that need to be set, except personal constants explained in the README.md.
 """
+
 # General
 # -------
+
+# Port
+PORT = 4002
 
 # The Currency traded
 CURRENCY = "USD"
@@ -52,7 +56,7 @@ COST_PER_SHARE = 0.005
 # ---------------
 
 # SEC Transaction Fee: USD 0.0000278 * Value of Aggregate Sales
-SEC_TRANS_FEE =  0.0000278
+SEC_TRANS_FEE = 0.0000278
 
 # FINRA Trading Activity Fee: USD 0.000166 * Quantity Sold
 FINRA_TRADING_ACTIVITY_FEE = 0.000166

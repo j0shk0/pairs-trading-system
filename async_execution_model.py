@@ -1,54 +1,74 @@
 """
-This Module contains the functions necessary to size and place orders on behalf of the Alpha Model. 
+This Module contains the functions necessary to size and place orders on behalf of the Alpha Model.
 """
+
 import copy
-import ib_insync
+import ib_async
 import async_portfolio_model
 import asyncio as aio
 from async_tws_connection import ib, build_connection
 
 
-def stock_limit_order(contract: ib_insync.contract.Stock, limit_price: int, action: str, quantity: int):
+def stock_limit_order(
+    contract: ib_async.contract.Stock, limit_price: int, action: str, quantity: int
+):
     """
-    Wrapper for an ib_insync Limit-Order.
-    :param contract: The ib_insync.contract.Stock Object, necessary for the execution of the order.
+    Wrapper for an ib_async Limit-Order.
+    :param contract: The ib_async.contract.Stock Object, necessary for the execution of the order.
     :param limit_price: The desired price.
     :param action: Intention to "BUY" or "SELL".
     :param quantity: The quantity of shares to be bought or sold.
     :return:
     """
-    order = ib_insync.LimitOrder(action, quantity, limit_price)
+    order = ib_async.LimitOrder(action, quantity, limit_price)
     trade = ib.placeOrder(contract, order)
-    print(f"\033[32mEXECUTION MODEL\033[0m : Limit {action} Order for {quantity} shares of {contract} placed;")
+    print(
+        f"\033[32mEXECUTION MODEL\033[0m : Limit {action} Order for {quantity} shares of {contract} placed;"
+    )
     ib.sleep(1)
-    trade.filledEvent += lambda filled_trade: aio.get_event_loop().create_task(filled_event_handler(filled_trade))
-    trade.cancelledEvent += lambda cancelled_trade: aio.get_event_loop().create_task(cancelled_event_handler(cancelled_trade))
+    trade.filledEvent += lambda filled_trade: aio.get_event_loop().create_task(
+        filled_event_handler(filled_trade)
+    )
+    trade.cancelledEvent += lambda cancelled_trade: aio.get_event_loop().create_task(
+        cancelled_event_handler(cancelled_trade)
+    )
 
-async def stock_market_order(contract: ib_insync.contract.Stock, action: str, quantity: int) :
+
+async def stock_market_order(
+    contract: ib_async.contract.Stock, action: str, quantity: int
+):
     """
-    Wrapper for an ib_insync Market-Order.
-    :param contract: The ib_insync.contract.Stock Object, necessary for the execution of the order.
+    Wrapper for an ib_async Market-Order.
+    :param contract: The ib_async.contract.Stock Object, necessary for the execution of the order.
     :param action: Intention to "BUY" or "SELL".
     :param quantity: The quantity of shares to be bought or sold.
     :return:
     """
-    order = ib_insync.MarketOrder(action, quantity)
+    order = ib_async.MarketOrder(action, quantity)
     trade = ib.placeOrder(contract, order)
     print("\033[32mEXECUTION MODEL\033[0m: Market Order sent.")
 
-    trade.filledEvent += lambda filled_trade: aio.get_event_loop().create_task(filled_event_handler(filled_trade))
-    trade.cancelledEvent += lambda cancelled_trade: aio.get_event_loop().create_task(cancelled_event_handler(cancelled_trade))
+    trade.filledEvent += lambda filled_trade: aio.get_event_loop().create_task(
+        filled_event_handler(filled_trade)
+    )
+    trade.cancelledEvent += lambda cancelled_trade: aio.get_event_loop().create_task(
+        cancelled_event_handler(cancelled_trade)
+    )
+
 
 async def filled_event_handler(filled_trade):
     print("\033[32mEXECUTION MODEL\033[0m: Order was filled")
     print("Filled Trade: \n" + str(filled_trade))
+
 
 async def cancelled_event_handler(cancelled_trade):
     print("\033[32mEXECUTION MODEL\033[0m: Order was cancelled")
     print("Cancelled Trade: \n" + str(cancelled_trade))
 
 
-async def execute_portfolio_adjustments(portfolio_class: async_portfolio_model.Portfolio, portfolio_adjustments: dict):
+async def execute_portfolio_adjustments(
+    portfolio_class: async_portfolio_model.Portfolio, portfolio_adjustments: dict
+):
     """
     Execution of the portfolio_adjustments, given as preferred new position sizes.
     :param portfolio_class: The class of the current Portfolio from the Module async_portfolio_model.py.
@@ -60,7 +80,8 @@ async def execute_portfolio_adjustments(portfolio_class: async_portfolio_model.P
 
     for ticker, ideal_position_size in portfolio_adjustments.items():
 
-        try: old_position_size = portfolio_class.portfolio[ticker]
+        try:
+            old_position_size = portfolio_class.portfolio[ticker]
         except KeyError:
             old_position_size = 0
         # The position_size variable determines the amount of shares of the next trade and the type of action. An action is a buy or a sell.
@@ -94,22 +115,25 @@ async def execute_portfolio_adjustments(portfolio_class: async_portfolio_model.P
                 portfolio_class.portfolio[ticker] = copy.copy(position_size)
             continue
         else:
-            print(f"\033[32mEXECUTION MODEL\033[0m : Zero positional change - no execution necessary for {ticker};")
+            print(
+                f"\033[32mEXECUTION MODEL\033[0m : Zero positional change - no execution necessary for {ticker};"
+            )
             continue
+
 
 async def main():
 
     # Check if a connection exists already
     if not ib.isConnected():
         await build_connection()
-    contract = ib_insync.contract.Stock("AMZN", "SMART", "USD")
+    contract = ib_async.contract.Stock("AMZN", "SMART", "USD")
     await ib.qualifyContractsAsync(contract)
-    
+
     # Call the stock_market_order and wait for the cancellation event
     await stock_market_order(contract, "BUY", 100)
 
     await aio.sleep(10)
-    
+
 
 if __name__ == "__main__":
     ib.run(main())

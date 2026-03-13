@@ -1,13 +1,15 @@
 """
-This module contains the Pairs class to effectively access the data 
+This module contains the Pairs class to effectively access the data
 and related operations of each Pair that is traded.
 """
+
 import asyncio as aio
-import ib_insync
+import ib_async
 from async_tws_connection import ib, build_connection
 from constants import MARKET_DATA_TYPE, CURRENCY
 
 all_data = dict()
+
 
 class Pair:
     """
@@ -24,18 +26,15 @@ class Pair:
     as long as the equation is set up correctly.
     """
 
-    def __init__(self,
-                 tickers: tuple,
-                 currency: str,
-                 equation: tuple):
- 
+    def __init__(self, tickers: tuple, currency: str, equation: tuple):
+
         a, b = tickers
 
         self.tickers: tuple = tickers
         self.ticker_a: str = a
         self.ticker_b: str = b
-        self.contract_a: ib_insync.contract.Stock = None
-        self.contract_b: ib_insync.contract.Stock = None
+        self.contract_a: ib_async.contract.Stock = None
+        self.contract_b: ib_async.contract.Stock = None
         self.quotes_a = None
         self.quotes_b = None
         self.equation: tuple = equation  # (const, slope)
@@ -45,11 +44,11 @@ class Pair:
     @staticmethod
     async def _collect_data(ticker, currency):
 
-        # First we connect the ticker to TWS to receive Market Data.
+        # First, we connect the ticker to TWS to receive Market Data.
         # Please change the respective constant in the constants.py file.
         # More information about the different settings: https://ib-insync.readthedocs.io/api.html#ib_insync.ib.IB.reqMarketDataType
 
-        contract = ib_insync.contract.Stock(ticker, "SMART", currency)
+        contract = ib_async.contract.Stock(ticker, "SMART", currency)
         await ib.qualifyContractsAsync(contract)
         ib.reqMarketDataType(MARKET_DATA_TYPE)
         data = ib.reqMktData(contract)
@@ -65,7 +64,9 @@ class Pair:
         self.quotes_b = data_b
         self.contract_a = contract_a
         self.contract_b = contract_b
-        print(f"\033[32mDATA CONNECTOR\033[0m: Pair {self.ticker_a} and {self.ticker_b} connected.")
+        print(
+            f"\033[32mDATA CONNECTOR\033[0m: Pair {self.ticker_a} and {self.ticker_b} connected."
+        )
 
     def export_essentials(self):
         return self.tickers, self.currency
