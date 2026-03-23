@@ -2,11 +2,13 @@
 This file contains all constants that need to be set, except personal constants explained in the README.md.
 """
 
+from pathlib import Path
+
 # General
 # -------
 
 # Port
-PORT = 4002
+PORT = 4002  # For TWS set this to 7496. Gateway Port is 4002.
 
 # The Currency traded
 CURRENCY = "USD"
@@ -17,7 +19,7 @@ BUDGET = 500_000.00
 # Amount of thed slots which is essentially the divisor of budget to determine the capital allocated to a trade.
 PAIRS_TRADED = 10
 
-PATH = "./pairs-trading/dbs/"
+PATH = Path(__file__).parent.parent / "dbs"
 
 DATABASE_NAME = "trading_log.db"
 

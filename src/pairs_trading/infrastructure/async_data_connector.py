@@ -5,8 +5,8 @@ and related operations of each Pair that is traded.
 
 import asyncio as aio
 import ib_async
-from async_tws_connection import ib, build_connection
-from constants import MARKET_DATA_TYPE, CURRENCY
+from ..infrastructure.async_connection import ib
+from ..config.constants import MARKET_DATA_TYPE
 
 all_data = dict()
 
@@ -33,10 +33,10 @@ class Pair:
         self.tickers: tuple = tickers
         self.ticker_a: str = a
         self.ticker_b: str = b
-        self.contract_a: ib_async.contract.Stock = None
-        self.contract_b: ib_async.contract.Stock = None
-        self.quotes_a = None
-        self.quotes_b = None
+        self.contract_a: ib_async.contract.Stock
+        self.contract_b: ib_async.contract.Stock
+        self.quotes_a: ib_async.ticker.Ticker
+        self.quotes_b: ib_async.ticker.Ticker
         self.equation: tuple = equation  # (const, slope)
         self.res_vol = float  # This is not used yet but could contain the volatility of the ratio of the prices.
         self.currency: str = currency

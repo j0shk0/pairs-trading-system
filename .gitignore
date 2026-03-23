@@ -1,9 +1,9 @@
 # workspace items are only to support my personal thinking process
 workspace/
-dbs/
+src/pairs_trading/dbs/
 .DS_Store
 .idea/
-personal_constants.py
+src/pairs_trading/config/personal_constants.py
 __pycache__/
-alpha_model.py
+src/pairs_trading/core/alpha_model.py
 *todo.txt

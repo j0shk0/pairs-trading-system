@@ -3,9 +3,9 @@ This module is testing the async_portfolio_model.py
 """
 import pytest
 import sqlite3
-from constants import PATH, DATABASE_NAME
+from src.pairs_trading.config.constants import PATH, DATABASE_NAME
 
-from async_portfolio_model import Portfolio
+from src.pairs_trading.core.async_portfolio_model import Portfolio
 
 pytest_plugins = ('pytest_asyncio',)
 

@@ -6,14 +6,14 @@ import aiosqlite
 import asyncio as aio
 import os
 import time
-from constants import PATH, DATABASE_NAME
+from ..config.constants import PATH, DATABASE_NAME, THRESHOLD
 
 current_time = time.strftime("%Y-%m-%d %H:%M:%S")
 
 
 async def initialize_logger():
-    if not os.path.exists(PATH + DATABASE_NAME):
-        async with aiosqlite.connect(PATH + DATABASE_NAME) as log:
+    if not os.path.exists(PATH / DATABASE_NAME):
+        async with aiosqlite.connect(PATH / DATABASE_NAME) as log:
             try:
                 create_table1 = f"""CREATE TABLE Signals(Time SmallDateTime, Deviation double, Sign int, Ticker_a char(15), 
                                     Ticker_b Char(15), Const double, Slope double, Threshold double);"""
@@ -41,15 +41,15 @@ async def log_trade(
 ):
     """
     This function used by the execution model logs all trades that were sent to IBKR.
-    :param trade_type: The type of the Trade so usually MARKET (Market Order) or LIMIT (Limit Order).
+    :param trade_type: The type of the Trade is usually MARKETS (Market Order) or LIMIT (Limit Order).
     :param action : BUY or SELL
-    :param quantity: The amount of shares traded.
+    :param quantity: The quantity of shares traded.
     :param stock_ticker: The ticker of the stock traded.
     :param price: The Price of the asset executed.
     """
 
     try:
-        async with aiosqlite.connect(PATH + DATABASE_NAME) as log:
+        async with aiosqlite.connect(PATH / DATABASE_NAME) as log:
             execution_command = (
                 f"INSERT INTO Trades (Time, Type, Action, Quantity, Stock, Price)"
                 f"VALUES (?, ?, ?, ?, ?, ?)"
@@ -65,25 +65,30 @@ async def log_trade(
         )
 
 
-async def log_signal(
-    deviation: float,
-    sign: int,
-    ticker_a: str,
-    ticker_b: str,
-    const: float,
-    slope: float,
-    threshold: float,
-):
+async def log_signal(new_signal: tuple):
     """
-    This function used by the alpha model logs all signals generated.
-    :param deviation: The Deviation of the two stock prices from their equilibrium.
-    :param sign: The sign of the deviation. This is separated to indicate the direction of the deviation.
-    :param ticker_a: Ticker of the first Stock.
-    :param ticker_b: Ticker of the second Stock.
+    Logs a new trading signal to the database.
+
+    The `log_signal` function asynchronously inserts a new trading signal into the database
+    table `Signals`. In case of database operational errors, an error message is printed to
+    the console.
+
+    :param new_signal: A tuple containing the signal data.
+        It includes:
+        - deviation: The numeric value representing the signal's deviation.
+        - sign: The sign of the deviation (positive or negative).
+        - pair: The trading pair as a tuple consisting of ticker_a and ticker_b.
+        - quotes: Ticker objects representing the current quotes for the pair.
+        - const: A constant value or regression.
+        - slope: The slope related to the signal trend.
+    :raises aiosqlite.OperationalError: If an operational error occurs while interacting with
+        the database.
     """
 
+    deviation, sign, pair, quotes, const, slope = new_signal
+
     try:
-        async with aiosqlite.connect(PATH + DATABASE_NAME) as log:
+        async with aiosqlite.connect(PATH / DATABASE_NAME) as log:
             execution_command = (
                 f"INSERT INTO Signals (Time, Deviation, Sign, Ticker_a, Ticker_b, Const, Slope, Threshold)"
                 f"VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
@@ -95,37 +100,18 @@ async def log_signal(
                     current_time,
                     deviation,
                     sign,
-                    ticker_a,
-                    ticker_b,
+                    pair.ticker_a,
+                    pair.ticker_b,
                     const,
                     slope,
-                    threshold,
+                    THRESHOLD,
                 ),
             )
             await log.commit()
             print(
-                f"\033[32mLOGGER\033[0m : New Signal of {ticker_a}/{ticker_b} written in Table Signals;"
+                f"\033[32mLOGGER\033[0m : New Signal of {pair.ticker_a}/{pair.ticker_b} written in Table Signals;"
             )
     except aiosqlite.OperationalError as e:
         print(
             "\033[32mLOGGER\033[0m : Writing signal data to database not successful;", e
         )
-
-
-"""
-I aim to do a full refacotring of the architecture implementing async where possible (and sensible).
-As a result of that I need to rewrite each Module by its own and thereby test it in isolation.
-"""
-
-
-async def test_main():
-    await initialize_logger()
-    await log_signal("6.90902283788843", "1", "AMZN", "CPNG", "1.0", "1.0", "0.0")
-
-    await log_trade("MARKET", "SELL", "211", "AMZN", "210.62")
-
-
-if __name__ == "__main__":
-    # Redefining the PATH for the test so that this file can be run as main
-    PATH = r"./dbs/"
-    aio.run(test_main())
