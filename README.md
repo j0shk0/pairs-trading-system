@@ -13,15 +13,16 @@
 
 Please first have a look at the [Disclaimer](#Disclaimer)
 
-This is an implementation of a Pairs Trading System written in Python. The Trading System interacts directly with the [Trader-Workstation (TWS)](https://www.interactivebrokers.ie/en/trading/tws.php) from [Interactive Brokers](https://www.interactivebrokers.ie/en/home.php). The Project focuses on the technical side and serves an educational purpose only.
+This is an implementation of a Pairs Trading System written in Python. The Trading System interacts directly with the [Trader-Workstation (TWS)](https://www.interactivebrokers.ie/en/trading/tws.php) or [IB Gateway](https://www.interactivebrokers.com/en/trading/ibgateway-latest.php) from [Interactive Brokers](https://www.interactivebrokers.ie/en/home.php).
 
-I intentionally kept certain parts of the System very rudimentary as this is a prototype and will be further refined by time.
 
 # Features
 
-The Trading System will create its own SQLite file, and respective Tables to store its trades and signals that were generated. It will remember which signals were used for its positions if the bot is switch off.
+`pairs-trading` is an Event Driven, asynchronous Trading System.
 
-First of all the Model will generate Signals. In the second step those Signals will be analyzed and if possible executed. You can change the Variables in `constant.py` to influence how much capital is allocated on how many different trades. In the last step the Portfolio will try to optimize itself by looking into the opportunity costs of signals that could not be followed because all capital was already allocated and compares them with the potential of its current positions.
+It will create its own SQLite file, and respective Tables to store its trades and signals that were generated. It will remember which signals were used for its positions if the bot is switch off.
+
+First of all the Model will generate Signals. In the second step those Signals will be analyzed and if possible executed. You can change the Variables in `constant.py` to influence how much capital is allocated on how many different trades.
 
 The Trading System is build out of different parts, including an Alpha Model, Execution Model, a Portfolio Model. Each Instance will print to the Terminal to inform the user about its most recent actions.
 
@@ -49,17 +50,21 @@ One major requirement is an Account at Interactive Brokers that is sufficiently 
 
 A `.txt` file is included in the folder `env`, enabling the reproduction of my environment explained [here](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments).
 
-Beyond that, it is required to create a file named `personal_constants.py`, including a variable called `ACCOUNT_NUMBER` of your Paper Trading Account.
+Beyond that, it is required to create a file named `personal_constants.py`, including a variable called `ACCOUNT_NUMBER` of your Paper Trading Account. Please safe it in `src/pairs_trading/config`.
 
 **CAUTION** the Pairs in the code have no durable relationship at all. They are only in there for demostrational purposes.
 
 # Usage
 
-Python 3.11.5 or higher is recommended as I used this version for the development. The Program will only run if TWS is set up correctly to allow interactions with a Program. Please disable `API > Setting > Read-Only API`.
+Python 3.11.5 or higher is recommended as I used this version for the development. The Program will only run if TWS is set up correctly to allow interactions with a Program. Please disable `API > Setting > Read-Only API`. Make sure the correct `PORT` is set in `constants.py`. There might be a pop-up window the first time you send Orders to TWS.
 
-If all requirements above are fullfilled you can log into your Paper Trading Account and run the Program from a simultaneously open Terminal. Please make sure to `cd` to the directory where the clone of this Repository is stored and run it through the command `python pairs-trading`, after selecting the conda environment.
+If all requirements above are fulfilled, you can log into your Paper Trading Account and run the Program from a simultaneously open Terminal. Please make sure to `cd` to `pairs-trading/src/` and run it through the command `python -m pairs_trading`, after selecting the conda environment.
 
 It is safe to end the program manually via `ctrl + c`.
+
+In case you want to close positions manually, remember to delete the database file in `pairs-trading/src/pairs_trading/db/`.
+
+I am using a x86_64 machine, running Debian 13.
 
 # License
 

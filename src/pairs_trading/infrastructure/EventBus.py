@@ -1,7 +1,10 @@
 """
 An EventBus intended to handle registration and deregistration of events
-using the ib_async API.
+using the ib_async API, eventkit to be precise.
 """
+import asyncio
+import inspect
+
 
 class EventBus:
 
@@ -28,19 +31,20 @@ class EventBus:
             key = f"{getattr(func, '__module__', '')}.{getattr(func, '__qualname__', repr(func))}"
             assert self._registry[key] is not None
             if set(self._registry[func]).intersection(set(args)):
-                self._registry[func] = list(
-                    set(self._registry[func]) - (set(args))
-                )
+                self._registry[func] = list(set(self._registry[func]) - (set(args)))
 
     def listen(self, func, *args) -> None:
-        key = f"{getattr(func, '__module__', '')}. {getattr(func, '__qualname__', repr(func))}"
-        try:
-            self._registry[key]
-        except KeyError:
-            self._registry[key] = []
+        key = f"{getattr(func, '__module__', '')}.{getattr(func, '__qualname__', repr(func))}"
+
+        def wrapped(*a, **kw):
+            result = func(*a, **kw)
+            if inspect.isawaitable(result):
+                asyncio.ensure_future(result)
+
+        self._registry.setdefault(key, [])
         for event in args:
             if event not in self._registry[key]:
-                event += func
+                event += wrapped
                 self._registry[key].append(event)
 
     def stop_listening(self, func, *args) -> None:
@@ -64,6 +68,9 @@ class EventBus:
         self.custom_events.pop(name)
 
     def fire_custom_event(self, name, *args):
-        self.custom_events[name](*args)
+        result = self.custom_events[name](*args)
+        if inspect.isawaitable(result):
+            asyncio.ensure_future(result)
+
 
 BusSingleton = EventBus()

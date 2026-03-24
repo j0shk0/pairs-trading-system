@@ -16,7 +16,7 @@ CURRENCY = "USD"
 # The value of the whole portfolio
 BUDGET = 500_000.00
 
-# Amount of thed slots which is essentially the divisor of budget to determine the capital allocated to a trade.
+# Amount of the slots which is essentially the divisor of budget to determine the capital allocated to a trade.
 PAIRS_TRADED = 10
 
 PATH = Path(__file__).parent.parent / "dbs"
@@ -29,7 +29,7 @@ GENERIC_TIMEOUT = 3
 
 THRESHOLD = 0
 
-MARKET_DATA_TYPE = 3
+MARKET_DATA_TYPE = 1
 
 # Trading Cost
 # ------------

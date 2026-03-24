@@ -162,6 +162,8 @@ class Portfolio:
                 portfolio_adjustment[ticker_b] = -1 * int(shares_b)
             self.followed_signals[pair.export_essentials()[0][0]] = new_signal
             self.followed_signals[pair.export_essentials()[0][1]] = new_signal
+            self.pairs_traded[ticker_a] = pair
+            self.pairs_traded[ticker_b] = pair
             self.empty_slots -= 1
             print(
                 f"""\033[32mPORTFOLIO MODEL\033[0m : New Signal will be ADDED to the Portfolio; """

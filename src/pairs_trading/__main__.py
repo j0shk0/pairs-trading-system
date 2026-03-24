@@ -45,9 +45,9 @@ async def main():
 
     # TODO we might parse the pairs from a file.
     test_pairs = [
-        Pair(("AAPL", "MSFT"), CURRENCY, (1, 1)),
-        Pair(("KO", "PEP"), CURRENCY, (1, 1)),
-        Pair(("GM", "CPNG"), CURRENCY, (1, 1)),
+        Pair(("AAPL", "MSFT"), CURRENCY, (1, 0)),
+        Pair(("CELH", "MNST"), CURRENCY, (1, 0)),
+        Pair(("RIVN", "LCID"), CURRENCY, (1, 0)),
     ]
 
     # Register the shutdown handler for SIGINT (Ctrl+C).
