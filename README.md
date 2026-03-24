@@ -48,7 +48,7 @@ One effective method to identify suitable pairs is cointegration, which helps qu
 
 One major requirement is an Account at Interactive Brokers that is sufficiently funded to be eligible to receive Market Data. Besides that there are a couple of dependencies.
 
-A `.txt` file is included in the folder `env`, enabling the reproduction of my environment explained [here](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments).
+A `.yml` file is included in the folder `env`, enabling the reproduction of my environment explained [here](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file).
 
 Beyond that, it is required to create a file named `personal_constants.py`, including a variable called `ACCOUNT_NUMBER` of your Paper Trading Account. Please safe it in `src/pairs_trading/config`.
 
@@ -56,7 +56,7 @@ Beyond that, it is required to create a file named `personal_constants.py`, incl
 
 # Usage
 
-Python 3.11.5 or higher is recommended as I used this version for the development. The Program will only run if TWS is set up correctly to allow interactions with a Program. Please disable `API > Setting > Read-Only API`. Make sure the correct `PORT` is set in `constants.py`. There might be a pop-up window the first time you send Orders to TWS.
+Python 3.13.12 or higher is recommended as I used this version for the development. The Program will only run if TWS is set up correctly to allow interactions with a Program. Please disable `API > Setting > Read-Only API`. Make sure the correct `PORT` is set in `constants.py`. There might be a pop-up window the first time you send Orders to TWS.
 
 If all requirements above are fulfilled, you can log into your Paper Trading Account and run the Program from a simultaneously open Terminal. Please make sure to `cd` to `pairs-trading/src/` and run it through the command `python -m pairs_trading`, after selecting the conda environment.
 
